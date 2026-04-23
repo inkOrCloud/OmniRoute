@@ -419,6 +419,45 @@ test("detectFormatFromEndpoint forces Claude for /v1/messages", () => {
   assert.equal(format, FORMATS.CLAUDE);
 });
 
+test("detectFormatFromEndpoint detects Claude for /v1/chat/completions with output_config", () => {
+  const format = detectFormatFromEndpoint(
+    {
+      model: "ikun-codex/gpt-5.3-codex",
+      output_config: { effort: "high" },
+      messages: [{ role: "user", content: "hi" }],
+      max_tokens: 100,
+    },
+    "/v1/chat/completions"
+  );
+  assert.equal(format, FORMATS.CLAUDE);
+});
+
+test("detectFormatFromEndpoint detects Claude for /v1/chat/completions with thinking enabled", () => {
+  const format = detectFormatFromEndpoint(
+    {
+      model: "ikun-codex/gpt-5.3-codex",
+      thinking: { type: "enabled", budget_tokens: 10000 },
+      messages: [{ role: "user", content: "hi" }],
+      max_tokens: 100,
+    },
+    "/v1/chat/completions"
+  );
+  assert.equal(format, FORMATS.CLAUDE);
+});
+
+test("detectFormatFromEndpoint detects Claude for /v1/chat/completions with anthropic_version", () => {
+  const format = detectFormatFromEndpoint(
+    {
+      model: "claude-opus-4-6",
+      anthropic_version: "2023-06-01",
+      messages: [{ role: "user", content: "hi" }],
+      max_tokens: 100,
+    },
+    "/v1/chat/completions"
+  );
+  assert.equal(format, FORMATS.CLAUDE);
+});
+
 test("translateRequest normalizes openai-responses input string into list payload", () => {
   const translated = translateRequest(
     FORMATS.OPENAI_RESPONSES,

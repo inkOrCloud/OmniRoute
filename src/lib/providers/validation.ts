@@ -731,15 +731,28 @@ async function validateOpenAICompatibleProvider({ apiKey, providerSpecificData =
   const chatUrl = `${baseUrl}${chatSuffix}`;
   const testModelId = validationModelId;
 
+  // Responses API providers require a different body format than Chat Completions.
+  // Using the Chat format (messages/max_tokens) against /responses results in a 403
+  // ("requires a non-empty instructions field") causing the provider to be banned.
+  const testBody =
+    apiType === "responses"
+      ? {
+          model: testModelId,
+          instructions: "test",
+          input: "test",
+          max_output_tokens: 1,
+        }
+      : {
+          model: testModelId,
+          messages: [{ role: "user", content: "test" }],
+          max_tokens: 1,
+        };
+
   try {
     const chatRes = await validationWrite(chatUrl, {
       method: "POST",
       headers: buildBearerHeaders(apiKey, providerSpecificData),
-      body: JSON.stringify({
-        model: testModelId,
-        messages: [{ role: "user", content: "test" }],
-        max_tokens: 1,
-      }),
+      body: JSON.stringify(testBody),
     });
 
     if (chatRes.ok) {

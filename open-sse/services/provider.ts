@@ -113,6 +113,18 @@ export function detectFormatFromEndpoint(body, endpointPath = "") {
     if (hasInputField || hasResponsesSpecificFields) {
       return "openai-responses";
     }
+    // Claude-specific fields sent to the completions endpoint (e.g., Claude Code clients)
+    const hasClaudeSpecificFields =
+      body != null &&
+      typeof body === "object" &&
+      (body.output_config !== undefined ||
+        (body.thinking != null &&
+          typeof body.thinking === "object" &&
+          body.thinking.type === "enabled") ||
+        body.anthropic_version !== undefined);
+    if (hasClaudeSpecificFields) {
+      return "claude";
+    }
     return "openai";
   }
 
